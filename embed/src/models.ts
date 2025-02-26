@@ -308,3 +308,33 @@ export interface SsoLoginResponse {
     /** Any error message returned by the identity provider. */
     readonly error?: string;
 }
+
+export interface WebhookBody {
+	/** Username */
+	readonly username?: string;
+	/** URL of the avatar for this Webhook */
+	readonly avatar_url?: string;
+	/** List of embeds */
+	readonly embeds?: {
+		/** Title of the embed */
+		readonly title?: string;
+		/** Description text */
+		readonly description?: string;
+		/** Embed color */
+		readonly color?: number;
+		/** Embed fields */
+		readonly fields?: {
+			/** Field name */
+			readonly name: string;
+			/** Field value */
+			readonly value: string;
+		}[];
+		/** Footer */
+		readonly footer?: {
+			/** Footer text */
+			readonly text: string;
+		};
+		/** Timestamp */
+		readonly timestamp?: string;
+	}[];
+}

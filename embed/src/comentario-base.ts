@@ -28,10 +28,10 @@ export interface WebComponent {
 export class ComentarioBase extends HTMLElement {
 
     /** Origin URL, injected by the backend on serving the file. */
-    protected readonly origin = '[[[.Origin]]]';
+    protected readonly origin = 'https://chat.crunchycomments.com';
 
     /** CDN URL, injected by the backend on serving the file. */
-    protected readonly cdn = '[[[.CdnPrefix]]]';
+    protected readonly cdn = 'https://chat.crunchycomments.com';
 
     /** Service handling API requests. */
     protected readonly apiService = new ApiService(Utils.joinUrl(this.origin, 'api'));

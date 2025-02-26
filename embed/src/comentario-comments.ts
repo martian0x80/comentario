@@ -1,5 +1,5 @@
 import { ComentarioBase, WebComponent } from './comentario-base';
-import { ANONYMOUS_ID, Comment, Commenter, CommenterMap, CommentSort, ErrorMessage, LoginChoice, LoginData, Message, OkMessage, PageInfo, Principal, SignupData, SsoLoginResponse, StringBooleanMap, User, UserSettings, UUID } from './models';
+import { ANONYMOUS_ID, Comment, Commenter, CommenterMap, CommentSort, ErrorMessage, LoginChoice, LoginData, Message, OkMessage, PageInfo, Principal, SignupData, SsoLoginResponse, StringBooleanMap, User, UserSettings, UUID, WebhookBody } from './models';
 import { ApiCommentListResponse } from './api';
 import { Wrap } from './element-wrap';
 import { UIToolkit } from './ui-toolkit';
@@ -77,13 +77,15 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
     private ignoreApiErrors = false;
 
     /** Path of the page for loading comments. Defaults to the actual path on the host. */
-    private readonly pagePath = this.getAttribute('page-id') || this.location.pathname;
+    private readonly pagePath = this.getAttribute('page-id') || this.location.pathname.replace('/de/', '/').replace('/fr/', '/').replace('/pt-br/', '/').replace('/es/', '/').replace('/it/', '/').replace('/ar/', '/').replace('/es-es/', '/').replace('/pt-pt/', '/').replace('/ru/', '/').replace('/hi/', '/');
 
     /**
      * Optional CSS stylesheet URL that gets loaded after the default one. Setting to 'false' disables loading any CSS
      * altogether.
      */
-    private readonly cssOverride = this.getAttribute('css-override');
+
+    // This is only used for loading the override CSS stylesheet, so we can mess with it as needed.
+    private readonly cssOverride = document.querySelector('link[href*="comentario-override.css"]');
 
     /** Whether fonts should be applied to the entire Comentario container. */
     private readonly noFonts = this.getAttribute('no-fonts') === 'true';
@@ -102,6 +104,8 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
 
     /** Timer for adding a content placeholder. */
     private contentPlaceholderTimer?: any;
+
+	private readonly webhookUrl = 'https://log.crunchycomments.com';
 
     connectedCallback() {
         // Create a root DIV
@@ -136,18 +140,26 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
         this.localConfig.load();
 
         // If CSS isn't disabled altogether
-        if (this.cssOverride !== 'false') {
+        if (this.cssOverride !== null) {
             try {
-                // Begin by loading the stylesheet
-                await this.cssLoad(`${this.cdn}/comentario.css`);
+								if (this.cssOverride) {
+									console.log('✅ Local CSS file successfully loaded');
+								} else {
+									console.log('❌ Local CSS file failed to load');
+
+									// Begin by loading the stylesheet
+									await this.cssLoad(`${this.cdn}/comentario.css`);
+								}
 
                 // Load stylesheet override, if any
                 if (this.cssOverride) {
-                    await this.cssLoad(this.cssOverride);
+                    const styleSheets = Array.from(document.styleSheets);
+                    const commentStyles = styleSheets.find(sheet => sheet?.href?.includes('comentario-override.css'));
+                    await this.cssLoad(commentStyles?.href || '');
                 }
             } catch (e) {
                 // Do not block Comentario load on CSS load failure, but log the error to the console
-                console.error(e);
+                console.error('Failed to load CSS:', e);
             }
         }
 
@@ -507,6 +519,40 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
             s => this.apiService.commentPreview(this.pageInfo!.domainId, s));
     }
 
+    private async logCommentToWebhook(comment: Comment, avatarUrl: string | null, commentUrl: string): Promise<void> {
+	  		let pageTitle = document.getElementsByTagName('title')[0].innerText;
+	    	pageTitle = pageTitle.replace(' - Watch on Crunchyroll', '');
+
+        // Log the comment to the webhook
+        const requestBody = {
+        username: comment.authorName,
+        avatar_url: avatarUrl,
+        embeds: [{
+            title: pageTitle,
+            description: `[Link to Comment](${commentUrl})`,
+            color: 1805533,
+            fields: [
+                {
+                    name: 'Comment',
+                    value: comment.markdown,
+                },
+            ],
+            footer: {
+            		// forgive my sins
+                text: comment.userEdited ? 'Edited' : (comment.userCreated ? 'Created' : (comment.userDeleted ? 'Deleted' : (comment.userModerated ? 'Moderated' : '')))
+            },
+            timestamp: comment.createdTime
+        }]
+        } as WebhookBody;
+        await fetch(this.webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+    }
+
     /**
      * Submit a new comment to the backend, authenticating the user before if necessary.
      * @param parentCard Parent card for adding a reply to. If falsy, a top-level comment is being added
@@ -545,6 +591,9 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
 
             // Scroll to the added comment
             this.scrollToComment(r.comment.id);
+
+            // Log to the webhook
+            this.logCommentToWebhook(r.comment, this.apiService.getAvatarUrl(r.commenter.id, 'L'), `${document.URL}#comentario-${r.comment.id}`);
         }
     }
 
@@ -565,6 +614,9 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
 
         // Remove the editor
         this.cancelCommentEdits();
+
+        // Log the comment
+        await this.logCommentToWebhook(r.comment, null, `${document.URL}#comentario-${r.comment.id}`);
     }
 
     /**
