@@ -519,13 +519,15 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
             s => this.apiService.commentPreview(this.pageInfo!.domainId, s));
     }
 
-    private async logCommentToWebhook(comment: Comment, avatarUrl: string | null, commentUrl: string): Promise<void> {
+    private async logCommentToWebhook(comment: Comment, username: string, avatarUrl: string | null, commentUrl: string): Promise<void> {
 	  		let pageTitle = document.getElementsByTagName('title')[0].innerText;
 	    	pageTitle = pageTitle.replace(' - Watch on Crunchyroll', '');
 
         // Log the comment to the webhook
         const requestBody = {
-        username: comment.authorName,
+        // It is possible to get the username for edited comments, but we'll need to make another API call to get the info from the id
+        // So, anonymous is good enough for now
+        username: username,
         avatar_url: avatarUrl,
         embeds: [{
             title: pageTitle,
@@ -593,7 +595,7 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
             this.scrollToComment(r.comment.id);
 
             // Log to the webhook
-            this.logCommentToWebhook(r.comment, this.apiService.getAvatarUrl(r.commenter.id, 'L'), `${document.URL}#comentario-${r.comment.id}`);
+            this.logCommentToWebhook(r.comment, r.commenter.name, this.apiService.getAvatarUrl(r.commenter.id, 'L'), `${document.URL}#comentario-${r.comment.id}`);
         }
     }
 
@@ -616,7 +618,7 @@ export class ComentarioComments extends ComentarioBase implements WebComponent {
         this.cancelCommentEdits();
 
         // Log the comment
-        await this.logCommentToWebhook(r.comment, null, `${document.URL}#comentario-${r.comment.id}`);
+        await this.logCommentToWebhook(r.comment, c.authorName || 'Anonymous', this.apiService.getAvatarUrl(c.userEdited || '', 'L'), `${document.URL}#comentario-${r.comment.id}`);
     }
 
     /**
