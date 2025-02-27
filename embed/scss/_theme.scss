@@ -1,5 +1,10 @@
 @use "colours";
 
+/*
+/* Crunchyroll only has a dark mode, so we do we really need to support light mode?
+/* I think I am gonna stick with the current fixed theme we are using.
+*/
+
 @mixin theme-props($theme: light) {
     // Light theme properties
     @if $theme == light {
@@ -42,9 +47,10 @@
     // Dark theme properties
     } @else {
         color-scheme: dark;
-        --cmntr-bg:                   #{colours.$gray-9};
+        /* --cmntr-bg:                   #{colours.$gray-9}; */
+        --cmntr-bg:                   transparent;
         --cmntr-bg-shade:             #{colours.$gray-8};
-        --cmntr-bg-highlight:         #{colours.$indigo-7};
+        --cmntr-bg-highlight:         #{colours.$cstm-cmntr-bg-highlight-color-10};
         --cmntr-bg-blink:             #{colours.$yellow-6};
         --cmntr-danger-bg:            #{colours.$red-9};
         --cmntr-deleted-bg:           #{colours.$pink-5};
@@ -56,14 +62,14 @@
         --cmntr-success-bg:           #{colours.$green-8};
         --cmntr-warning-bg:           #{colours.$yellow-8};
 
-        --cmntr-color:                #{colours.$gray-1};
+        --cmntr-color:                #{colours.$cstm-cmntr-color};
         --cmntr-danger-color:         #{colours.$red-2};
         --cmntr-input-color:          #{colours.$gray-2};
         --cmntr-input-ph-color:       #{colours.$gray-4};
         --cmntr-input-disabled-color: #{colours.$gray-3};
         --cmntr-label-color:          #{colours.$gray-2};
-        --cmntr-link-color:           #{colours.$blue-3};
-        --cmntr-link-hover-color:     #{colours.$blue-6};
+        --cmntr-link-color:           #{colours.$cstm-cmntr-link-color};
+        --cmntr-link-hover-color:     #{colours.$cstm-cmntr-link-hover-color};
         --cmntr-muted-color:          #{colours.$gray-3};
         --cmntr-score-color:          #{colours.$gray-5};
         --cmntr-score-up-color:       #{colours.$green-3};

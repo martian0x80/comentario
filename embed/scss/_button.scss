@@ -8,9 +8,9 @@
     --cmntr-btn-color:        var(--cmntr-link-color);
     --cmntr-btn-bg:           transparent;
     --cmntr-btn-hover-color:  var(--cmntr-link-hover-color);
-    --cmntr-btn-hover-bg:     transparent;
+    --cmntr-btn-hover-bg:     colours.$cstm-cmntr-link-hover-color;
     --cmntr-btn-active-color: var(--cmntr-link-hover-color);
-    --cmntr-btn-active-bg:    transparent;
+    --cmntr-btn-active-bg:    colours.$cstm-cmntr-link-hover-color;
 
     color: var(--cmntr-btn-color);
     background-color: var(--cmntr-btn-bg);
@@ -22,7 +22,7 @@
     cursor: pointer;
     line-height: 20px;
     padding: 6px 12px;
-    border: 1px solid transparent;
+    border: 0.1rem solid white;
     border-radius: 0.15rem;
     margin: 5px;
     transition: color 0.4s, background-color 0.4s;

@@ -67,7 +67,7 @@ $animation-duration: 250ms;
 @keyframes comentario-bg-highlight-animation {
     0%   { background-color: transparent; }
     10%  { background-color: var(--cmntr-bg-highlight); }
-    50%  { background-color: var(--cmntr-bg-highlight); }
+    50%  { background-color: colours.$cstm-cmntr-bg-highlight-color-50; }
     100% { background-color: transparent; }
 }
 

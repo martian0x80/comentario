@@ -24,12 +24,19 @@ comentario-comments {
 
 .comentario-root {
     position: relative;
-    padding: 0;
-    width: 100%;
+    margin: auto;
+    padding: -3 40px;
+    width: 60%;
     font-family: inherit;
     font-size: 15px;
     line-height: 1.5;
     color: var(--cmntr-color);
+
+    min-height: 55px;
+    min-width: fit-content;
+	height: min-content;
+	width: 69%; /* Nice */
+	margin-top: -45px;
 
     &.comentario-root-font {
         * {
@@ -52,4 +59,10 @@ comentario-comments {
     @include meta.load-css("spinners");
     @include meta.load-css("thread-toolbar");
     @include meta.load-css("toolbar");
+}
+
+@media screen and (min-width: 576px) {
+	.comentario-root {
+		max-width: 100%;
+	}
 }
